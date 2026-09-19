@@ -62,73 +62,20 @@ select:focus-visible {
   flex-direction: column;
 }
 
-.topbar {
-  min-height: 68px;
-  padding: max(12px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) 12px
-    max(20px, env(safe-area-inset-left));
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  background: var(--green);
-  color: white;
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  min-width: 0;
-}
-
-.brand-mark {
-  width: 38px;
-  height: 38px;
-  flex: 0 0 auto;
+.menu-fab {
+  position: fixed;
+  top: max(10px, env(safe-area-inset-top));
+  right: max(12px, env(safe-area-inset-right));
+  z-index: 15;
+  width: 44px;
+  height: 44px;
   display: grid;
   place-items: center;
-  border-radius: 12px;
-  background: var(--gold);
-  color: var(--green);
-  font-size: 20px;
-  font-weight: 900;
-  transform: rotate(-4deg);
-}
-
-.brand-copy {
-  min-width: 0;
-}
-
-.brand-name {
-  margin: 0;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(21px, 2.4vw, 28px);
-  line-height: 1;
-}
-
-.brand-subtitle {
-  margin: 4px 0 0;
-  color: #bcd3ca;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.topbar-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.hand-pill {
-  padding: 8px 13px;
-  border: 1px solid rgb(255 255 255 / 16%);
-  border-radius: 999px;
-  background: rgb(255 255 255 / 9%);
-  font-size: 13px;
-  font-weight: 800;
-  white-space: nowrap;
+  border-radius: 14px;
+  background: var(--green);
+  color: white;
+  font-size: 22px;
+  box-shadow: 0 6px 16px rgb(18 56 45 / 22%);
 }
 
 .icon-button {
@@ -143,10 +90,17 @@ select:focus-visible {
 }
 
 .main {
-  width: min(1180px, 100%);
+  width: min(1100px, 100%);
   margin: 0 auto;
-  padding: clamp(18px, 3vw, 34px);
+  padding: max(16px, env(safe-area-inset-top)) clamp(16px, 3vw, 30px)
+    max(16px, env(safe-area-inset-bottom));
   flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.main.has-menu {
+  padding-top: max(64px, calc(env(safe-area-inset-top) + 56px));
 }
 
 .screen-heading {
@@ -180,9 +134,15 @@ h2 {
 
 h1 {
   margin-bottom: 6px;
-  font-size: clamp(30px, 4.5vw, 54px);
+  font-size: clamp(28px, 4vw, 44px);
   line-height: 0.98;
   letter-spacing: -0.035em;
+}
+
+.screen-title {
+  margin: 0 0 12px;
+  font-size: clamp(22px, 3.5vw, 30px);
+  letter-spacing: -0.02em;
 }
 
 h2 {
@@ -215,45 +175,67 @@ h3 {
   box-shadow: var(--shadow);
 }
 
-.setup-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.65fr);
-  gap: 20px;
-}
-
-.setup-card {
-  padding: clamp(20px, 3vw, 32px);
-}
-
-.section-title-row {
+.setup {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  margin-bottom: 15px;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.section-title-row h2,
-.section-title-row h3 {
+.setup-head {
+  margin-bottom: 2px;
+}
+
+.setup-hint {
   margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
 }
 
 .player-list {
-  display: grid;
-  gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .player-row {
   display: grid;
-  grid-template-columns: 36px minmax(0, 1fr) auto;
+  grid-template-columns: 32px minmax(0, 1fr) 40px 34px;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  padding: 0 4px 0 8px;
+  border-radius: 14px;
+  background: rgb(255 253 248 / 70%);
+}
+
+.player-row.dragging {
+  opacity: 0.9;
+  box-shadow: var(--shadow);
+  background: var(--white);
+}
+
+.drag-handle {
+  width: 30px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1;
+  cursor: grab;
+  touch-action: none;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
 }
 
 .order-number,
 .bid-order {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   display: grid;
   place-items: center;
   border-radius: 50%;
@@ -263,9 +245,15 @@ h3 {
   font-weight: 900;
 }
 
-.text-input,
-.select-input {
+.order-number.is-dealer,
+.bid-order.is-dealer {
+  background: var(--gold);
+  color: var(--green);
+}
+
+.text-input {
   width: 100%;
+  min-width: 0;
   min-height: 48px;
   border: 1px solid #d9d0c1;
   border-radius: 13px;
@@ -275,42 +263,32 @@ h3 {
 }
 
 .remove-player {
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 44px;
   border-radius: 12px;
   background: transparent;
   color: #9d554e;
-  font-size: 20px;
+  font-size: 22px;
 }
 
-.player-actions {
-  display: flex;
-  align-items: center;
-}
-
-.player-actions button {
-  width: 29px;
-  height: 38px;
-  border-radius: 9px;
-  background: transparent;
-  color: var(--muted);
-  font-weight: 900;
-}
-
-.player-actions button:hover:not(:disabled) {
-  background: var(--paper);
-  color: var(--green);
-}
-
-.player-actions button:disabled {
+.remove-player:disabled {
   cursor: not-allowed;
   opacity: 0.25;
 }
 
-.player-actions .remove-player {
-  width: 34px;
-  color: #9d554e;
-  font-size: 20px;
+.setup-foot {
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.setup-meta {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .button {
@@ -351,12 +329,6 @@ h3 {
   color: var(--green);
 }
 
-.button.small {
-  min-height: 38px;
-  padding: 0 14px;
-  font-size: 13px;
-}
-
 .button:disabled,
 .stepper button:disabled {
   cursor: not-allowed;
@@ -367,82 +339,19 @@ h3 {
   width: 100%;
 }
 
-.setup-summary {
-  min-height: 100%;
-  padding: 25px;
-  display: flex;
-  flex-direction: column;
-  background: var(--green);
-  color: white;
-}
-
-.setup-summary h2 {
-  color: white;
-}
-
-.summary-number {
-  margin: auto 0 2px;
-  color: var(--gold);
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(70px, 11vw, 126px);
-  line-height: 0.85;
-}
-
-.summary-label {
-  color: #bfd4cc;
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.setup-stats {
-  margin: 24px 0;
-  padding: 18px 0;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  border-block: 1px solid rgb(255 255 255 / 13%);
-}
-
-.setup-stat strong {
-  display: block;
-  font-size: 23px;
-}
-
-.setup-stat span {
-  color: #b7ccc4;
-  font-size: 12px;
-}
-
-.field {
-  margin-top: 20px;
-}
-
-.field label {
-  display: block;
-  margin-bottom: 8px;
-  font-size: 13px;
-  font-weight: 800;
-}
-
 .round-banner {
-  margin-bottom: 20px;
-  padding: 18px 22px;
+  margin-bottom: 16px;
+  padding: 14px 16px;
   display: grid;
-  grid-template-columns: 1fr auto auto;
+  grid-template-columns: auto auto auto 1fr;
   align-items: center;
-  gap: clamp(20px, 5vw, 60px);
+  gap: clamp(12px, 4vw, 32px);
   overflow: hidden;
 }
 
-.round-stat {
-  min-width: 90px;
-}
-
-.round-stat span {
+.round-stat > span {
   display: block;
-  margin-bottom: 3px;
+  margin-bottom: 2px;
   color: var(--muted);
   font-size: 11px;
   font-weight: 850;
@@ -450,14 +359,50 @@ h3 {
   text-transform: uppercase;
 }
 
-.round-stat strong {
-  font-size: 22px;
+.round-stat > strong {
+  font-size: clamp(18px, 3vw, 22px);
+}
+
+.round-stat-trump {
+  justify-self: end;
+  text-align: right;
 }
 
 .trump-inline {
   display: flex;
   align-items: center;
-  gap: 11px;
+  gap: 10px;
+}
+
+.suit-badge {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  height: auto;
+  font-family: "Apple Symbols", "Arial Unicode MS", "Times New Roman", serif;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+  transform: translateY(3px);
+}
+
+.suit-badge.red {
+  color: var(--red-suit);
+}
+
+.suit-badge.black {
+  color: var(--black-suit);
+}
+
+.suit-badge.no-trump {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--green-2);
+  transform: translateY(1px);
 }
 
 .suit {
@@ -473,7 +418,12 @@ h3 {
   color: var(--black-suit);
 }
 
-.bid-grid,
+.bid-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
 .result-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -490,6 +440,7 @@ h3 {
 }
 
 .bid-card.is-dealer {
+  border-width: 2px;
   border-color: rgb(231 182 78 / 65%);
 }
 
@@ -559,101 +510,127 @@ h3 {
 }
 
 .play-screen {
-  display: grid;
-  grid-template-columns: minmax(250px, 0.8fr) minmax(380px, 1.2fr);
-  gap: 20px;
-  min-height: calc(100dvh - 68px - clamp(36px, 6vw, 68px));
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: hidden;
 }
 
 .trump-hero {
-  padding: 24px;
+  position: relative;
+  flex: 0 0 auto;
+  width: 100%;
+  aspect-ratio: 1;
+  min-height: 150px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 2px;
   overflow: hidden;
-  background: var(--green);
-  color: white;
+  border-radius: var(--radius);
+  background: var(--white);
+  color: var(--green);
+  box-shadow: var(--shadow);
   text-align: center;
 }
 
+.play-menu-fab {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
+
 .trump-hero .suit-symbol {
-  margin: -10px 0;
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(110px, 22vw, 230px);
-  line-height: 0.9;
+  font-size: min(42vh, 52vw);
+  line-height: 0.85;
   filter: drop-shadow(0 12px 18px rgb(0 0 0 / 16%));
 }
 
-.trump-hero .suit-symbol.red {
+.trump-hero.red .suit-symbol {
   color: #ef706a;
 }
 
-.trump-hero .suit-symbol.black {
-  color: #f5eedf;
+.trump-hero.black .suit-symbol {
+  color: var(--green);
 }
 
 .trump-hero .suit-symbol.no-trump {
-  width: clamp(130px, 18vw, 190px);
-  height: clamp(130px, 18vw, 190px);
-  margin: 0;
+  width: min(26vh, 34vw);
+  height: min(26vh, 34vw);
   display: grid;
   place-items: center;
   border: 8px solid var(--gold);
   border-radius: 50%;
   color: var(--gold);
-  font-family: inherit;
-  font-size: clamp(42px, 7vw, 72px);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: min(9vh, 12vw);
 }
 
-.trump-hero h1 {
-  margin: 20px 0 4px;
+.trump-title {
+  margin-top: 8px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(26px, 6vw, 44px);
+  line-height: 1;
 }
 
-.trump-hero p {
-  margin: 0;
-  color: #bcd0c8;
+.trump-meta {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: clamp(13px, 3vw, 16px);
   font-weight: 700;
 }
 
 .play-bids {
-  padding: clamp(20px, 3vw, 30px);
+  flex: 0 1 auto;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-}
-
-.bid-reminder-list {
-  margin: 6px 0 20px;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 
+.bid-reminder-list {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--bid-columns, 2), minmax(0, 1fr));
+  gap: 8px;
+  overflow-y: auto;
+}
+
 .bid-reminder {
-  padding: 12px 15px;
+  padding: 8px 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  border-radius: 14px;
-  background: var(--paper);
+  gap: 10px;
+  border-radius: 12px;
+  background: rgb(255 253 248 / 82%);
+  border: 1px solid rgb(24 51 44 / 8%);
+}
+
+.bid-reminder .player-name {
+  font-size: clamp(14px, 3.4vw, 17px);
 }
 
 .bid-bubble {
-  width: 38px;
-  height: 38px;
+  width: 34px;
+  height: 34px;
   flex: 0 0 auto;
   display: grid;
   place-items: center;
   border-radius: 50%;
   background: var(--green);
   color: white;
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 900;
 }
 
 .play-bids .button {
-  margin-top: auto;
+  flex: 0 0 auto;
 }
 
 .result-card {
@@ -943,84 +920,19 @@ h3 {
   transform: translateX(-50%);
 }
 
-@media (max-width: 760px) {
-  .brand-subtitle,
-  .hand-pill {
-    display: none;
-  }
-
-  .main {
-    padding: 16px;
-  }
-
-  .setup-layout,
-  .play-screen {
-    grid-template-columns: 1fr;
-  }
-
-  .setup-summary {
-    min-height: 340px;
-  }
-
-  .round-banner {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-  }
-
-  .round-banner .round-stat:first-child {
-    grid-column: 1 / -1;
-  }
-
-  .bid-grid,
+@media (max-width: 620px) {
   .result-grid {
     grid-template-columns: 1fr;
   }
 
-  .play-screen {
-    min-height: 0;
-  }
-
-  .trump-hero {
-    min-height: 330px;
-  }
-}
-
-@media (max-width: 500px) {
-  .topbar {
-    min-height: 62px;
-    padding-inline: 14px;
-  }
-
-  .brand-mark {
-    width: 34px;
-    height: 34px;
-  }
-
-  .screen-heading {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
   .round-banner {
-    padding: 15px;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
   }
 
-  .round-stat strong {
-    font-size: 17px;
-  }
-
-  .bid-card {
-    grid-template-columns: 34px minmax(80px, 1fr) auto;
-    padding: 13px;
-    gap: 8px;
-  }
-
-  .stepper {
-    grid-template-columns: 36px 38px 36px;
-  }
-
-  .bid-reminder-list {
-    grid-template-columns: 1fr;
+  .round-stat-trump {
+    justify-self: start;
+    text-align: left;
   }
 
   .action-row {
@@ -1030,10 +942,21 @@ h3 {
   .action-row .button {
     width: 100%;
   }
+}
+
+@media (max-width: 420px) {
+  .choose-result {
+    display: none;
+  }
 
   .result-card {
-    align-items: stretch;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(80px, 1fr) auto;
+    gap: 8px;
+    padding-inline: 13px;
+  }
+
+  .result-toggle button {
+    min-width: 62px;
   }
 
   .podium {
@@ -1053,65 +976,23 @@ h3 {
 }
 
 @media (orientation: landscape) and (max-height: 560px) {
-  .topbar {
-    min-height: 58px;
-    padding-block: 9px;
-  }
-
-  .brand-mark {
-    width: 34px;
-    height: 34px;
-  }
-
-  .main {
-    padding-block: 14px;
-  }
-
-  .screen-heading {
-    margin-bottom: 14px;
-  }
-
-  .screen-heading h1 {
-    font-size: 34px;
-  }
-
-  .round-banner {
-    margin-bottom: 12px;
-    padding-block: 12px;
-  }
-
-  .bid-card,
-  .result-card {
-    padding-block: 10px;
-  }
-
-  .action-row {
-    margin-top: 12px;
-  }
-
   .play-screen {
-    min-height: calc(100dvh - 86px);
+    flex-direction: row;
+  }
+
+  .trump-hero {
+    flex: 0 0 auto;
+    width: auto;
+    height: 100%;
+    aspect-ratio: 1;
   }
 
   .trump-hero .suit-symbol {
-    font-size: clamp(100px, 20vw, 175px);
-  }
-
-  .trump-hero .suit-symbol.no-trump {
-    width: 115px;
-    height: 115px;
-    font-size: 42px;
+    font-size: min(46vh, 26vw);
   }
 
   .play-bids {
-    padding-block: 18px;
-  }
-
-  .play-bids h2 {
-    margin-bottom: 4px;
-  }
-
-  .bid-reminder-list {
-    margin-bottom: 10px;
+    flex: 1 1 55%;
+    justify-content: center;
   }
 }

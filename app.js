@@ -70,9 +70,7 @@ function createCardSequence(maxCards) {
 function createGame() {
   const players = state.players.map((player) => ({ ...player, name: player.name.trim() }));
   const maxCards = getMaxCards(players.length);
-  const startingDealerIndex = players.findIndex(
-    (player) => player.id === state.startingDealerId,
-  );
+  const startingDealerIndex = 0;
   const cardsByRound = createCardSequence(maxCards);
 
   state = {
@@ -156,45 +154,21 @@ function setupIsValid() {
     state.players.length >= 2 &&
     state.players.length <= 52 &&
     names.every(Boolean) &&
-    new Set(names).size === names.length &&
-    state.players.some((player) => player.id === state.startingDealerId)
+    new Set(names).size === names.length
   );
 }
 
 function layout(content, options = {}) {
-  const { showMenu = state.phase !== "setup", heading = true } = options;
-  const round = state.rounds.length > 0 ? currentRound() : null;
-  const handLabel =
-    round && !["final", "scorecard"].includes(state.phase)
-      ? `Hand ${round.handNumber} of ${state.rounds.length}`
-      : "";
+  const { showMenu = state.phase !== "setup" } = options;
 
   return `
     <div class="app-shell">
       ${
-        heading
-          ? `
-            <header class="topbar">
-              <div class="brand">
-                <div class="brand-mark">H</div>
-                <div class="brand-copy">
-                  <p class="brand-name">Hazel's Game</p>
-                  <p class="brand-subtitle">Table scorekeeper</p>
-                </div>
-              </div>
-              <div class="topbar-actions">
-                ${handLabel ? `<span class="hand-pill">${handLabel}</span>` : ""}
-                ${
-                  showMenu
-                    ? `<button class="icon-button" data-action="open-menu" aria-label="Open game menu">☰</button>`
-                    : ""
-                }
-              </div>
-            </header>
-          `
+        showMenu
+          ? `<button class="menu-fab" data-action="open-menu" aria-label="Open game menu">☰</button>`
           : ""
       }
-      <main class="main">${content}</main>
+      <main class="main${showMenu ? " has-menu" : ""}">${content}</main>
       ${state.drawerOpen ? renderDrawer() : ""}
     </div>
   `;
@@ -236,95 +210,54 @@ function renderSetup() {
 
   return layout(
     `
-      <div class="screen-heading">
-        <div>
-          <p class="eyebrow">New scorecard</p>
-          <h1>Gather the table.</h1>
-          <p class="lede">Add players in seating order. The next player in the list is always seated to the left.</p>
+      <div class="setup">
+        <div class="setup-head">
+          <h1 class="screen-title">Players</h1>
+          <p class="setup-hint">First player is the starting dealer · drag to reorder</p>
         </div>
-      </div>
-      <div class="setup-layout">
-        <section class="card setup-card">
-          <div class="section-title-row">
-            <h2>Players</h2>
-            <button class="button secondary small" data-action="add-player" ${
-              state.players.length >= 52 ? "disabled" : ""
-            }>＋ Add player</button>
-          </div>
-          <div class="player-list">
-            ${state.players
-              .map(
-                (player, index) => `
-                  <div class="player-row">
-                    <span class="order-number">${index + 1}</span>
-                    <input
-                      class="text-input"
-                      data-player-name="${player.id}"
-                      value="${escapeHtml(player.name)}"
-                      aria-label="Player ${index + 1} name"
-                      maxlength="30"
-                      placeholder="Player ${index + 1}"
-                    />
-                    <div class="player-actions">
-                      <button data-action="move-player-up" data-player-id="${player.id}" aria-label="Move ${escapeHtml(
-                        player.name || `player ${index + 1}`,
-                      )} up" ${index === 0 ? "disabled" : ""}>↑</button>
-                      <button data-action="move-player-down" data-player-id="${player.id}" aria-label="Move ${escapeHtml(
-                        player.name || `player ${index + 1}`,
-                      )} down" ${index === state.players.length - 1 ? "disabled" : ""}>↓</button>
-                      <button class="remove-player" data-action="remove-player" data-player-id="${
-                        player.id
-                      }" aria-label="Remove player" ${
-                        state.players.length <= 2 ? "disabled" : ""
-                      }>×</button>
-                    </div>
-                  </div>
-                `,
-              )
-              .join("")}
-          </div>
-          ${
-            duplicateNames
-              ? '<p class="restriction">Each player needs a unique name.</p>'
-              : ""
-          }
-        </section>
-
-        <aside class="card setup-summary">
-          <div>
-            <p class="eyebrow" style="color:#e7b64e">Game shape</p>
-            <h2>${state.players.length} players</h2>
-          </div>
-          <div class="summary-number">${maxCards}</div>
-          <div class="summary-label">Cards in the first hand</div>
-          <div class="setup-stats">
-            <div class="setup-stat">
-              <strong>${handCount}</strong>
-              <span>Total hands</span>
-            </div>
-            <div class="setup-stat">
-              <strong>${validNames}/${state.players.length}</strong>
-              <span>Players named</span>
-            </div>
-          </div>
-          <div class="field">
-            <label for="starting-dealer">Starting dealer</label>
-            <select class="select-input" id="starting-dealer" data-action="set-starting-dealer">
-              ${state.players
-                .map(
-                  (player, index) => `
-                    <option value="${player.id}" ${
-                      player.id === state.startingDealerId ? "selected" : ""
-                    }>${escapeHtml(player.name.trim() || `Player ${index + 1}`)}</option>
-                  `,
-                )
-                .join("")}
-            </select>
-          </div>
-          <button class="button gold full-width" style="margin-top:20px" data-action="start-game" ${
+        <div class="player-list">
+          ${state.players
+            .map(
+              (player, index) => `
+                <div class="player-row" data-player-id="${player.id}">
+                  <span class="order-number ${index === 0 ? "is-dealer" : ""}">${
+                    index === 0 ? "D" : index + 1
+                  }</span>
+                  <input
+                    class="text-input"
+                    data-player-name="${player.id}"
+                    value="${escapeHtml(player.name)}"
+                    aria-label="Player ${index + 1} name"
+                    autocomplete="name"
+                    autocapitalize="words"
+                    maxlength="30"
+                    placeholder="Player ${index + 1}"
+                  />
+                  <button class="remove-player" data-action="remove-player" data-player-id="${
+                    player.id
+                  }" tabindex="-1" aria-label="Remove player" ${
+                    state.players.length <= 2 ? "disabled" : ""
+                  }>×</button>
+                  <button class="drag-handle" data-drag-handle tabindex="-1" aria-label="Drag to reorder">⠿</button>
+                </div>
+              `,
+            )
+            .join("")}
+        </div>
+        <button class="button secondary full-width" data-action="add-player" ${
+          state.players.length >= 52 ? "disabled" : ""
+        }>＋ Add player</button>
+        ${
+          duplicateNames
+            ? '<p class="restriction">Each player needs a unique name.</p>'
+            : ""
+        }
+        <div class="setup-foot">
+          <span class="setup-meta">${state.players.length} players · ${maxCards} cards · ${handCount} hands</span>
+          <button class="button gold" data-action="start-game" ${
             setupIsValid() ? "" : "disabled"
-          }>Start game <span aria-hidden="true">→</span></button>
-        </aside>
+          }>Start <span aria-hidden="true">→</span></button>
+        </div>
       </div>
     `,
     { showMenu: false },
@@ -336,18 +269,22 @@ function renderRoundBanner(round) {
   return `
     <section class="card round-banner">
       <div class="round-stat">
+        <span>Hand</span>
+        <strong>${round.handNumber}/${state.rounds.length}</strong>
+      </div>
+      <div class="round-stat">
         <span>Dealer</span>
         <strong>${escapeHtml(dealerFor(round).name)}</strong>
       </div>
       <div class="round-stat">
-        <span>Cards dealt</span>
+        <span>Cards</span>
         <strong>${round.cards}</strong>
       </div>
-      <div class="round-stat">
+      <div class="round-stat round-stat-trump">
         <span>Trump</span>
         <strong class="trump-inline">
-          <span class="suit ${suit.color}">${suit.symbol}</span>
-          ${suit.name}
+          <span class="suit-badge ${suit.color}">${suit.symbol}</span>
+          <span class="trump-name">${suit.name}</span>
         </strong>
       </div>
     </section>
@@ -363,14 +300,8 @@ function renderBidding() {
     restriction.prohibited !== null && dealerBid === restriction.prohibited;
 
   return layout(`
-    <div class="screen-heading">
-      <div>
-        <p class="eyebrow">Hand ${round.handNumber} of ${state.rounds.length}</p>
-        <h1>Place your bids.</h1>
-        <p class="lede">Bidding starts left of the dealer and follows the seating order shown.</p>
-      </div>
-    </div>
     ${renderRoundBanner(round)}
+    <h1 class="screen-title">Place your bids</h1>
     <section class="bid-grid">
       ${order
         .map((player, index) => {
@@ -378,11 +309,10 @@ function renderBidding() {
           const bid = Number(round.bids[player.id]);
           return `
             <article class="card bid-card ${isDealer ? "is-dealer" : ""}">
-              <span class="bid-order">${index + 1}</span>
-              <div class="player-name">
-                ${escapeHtml(player.name)}
-                ${isDealer ? '<span class="dealer-tag">Dealer · bids last</span>' : ""}
-              </div>
+              <span class="bid-order ${isDealer ? "is-dealer" : ""}">${
+                isDealer ? "D" : index + 1
+              }</span>
+              <div class="player-name">${escapeHtml(player.name)}</div>
               <div class="stepper" aria-label="${escapeHtml(player.name)} bid">
                 <button data-action="change-bid" data-player-id="${player.id}" data-delta="-1" ${
                   bid <= 0 ? "disabled" : ""
@@ -399,12 +329,12 @@ function renderBidding() {
     </section>
     ${
       restriction.overbid
-        ? `<p class="restriction overbid">The bids are already over ${round.cards}. ${escapeHtml(
+        ? `<p class="restriction overbid">Overbid. ${escapeHtml(
             dealerFor(round).name,
-          )} may bid any value from 0 to ${round.cards}.</p>`
+          )} may bid any amount.</p>`
         : `<p class="restriction">${escapeHtml(dealerFor(round).name)} cannot bid <strong>${
             restriction.prohibited
-          }</strong>, because the total bids would equal ${round.cards}.</p>`
+          }</strong>.</p>`
     }
     <div class="action-row">
       <button class="button" data-action="confirm-bids" ${
@@ -417,21 +347,20 @@ function renderBidding() {
 function renderPlay() {
   const round = currentRound();
   const suit = suitFor(round.trump);
+  const order = biddingOrder(round);
   return layout(`
     <section class="play-screen">
-      <div class="card trump-hero">
-        <p class="eyebrow" style="color:#e7b64e">Current trump</p>
+      <div class="trump-hero ${suit.color}">
+        <button class="menu-fab play-menu-fab" data-action="open-menu" aria-label="Open game menu">☰</button>
         <div class="suit-symbol ${suit.color}" aria-label="${suit.name}">${suit.symbol}</div>
-        <h1>${suit.name}</h1>
-        <p>${round.cards} card${round.cards === 1 ? "" : "s"} · ${escapeHtml(
+        <div class="trump-title">${suit.name}</div>
+        <div class="trump-meta">${round.cards} card${round.cards === 1 ? "" : "s"} · ${escapeHtml(
           dealerFor(round).name,
-        )} deals</p>
+        )} deals</div>
       </div>
-      <div class="card play-bids">
-        <p class="eyebrow">Hand ${round.handNumber} of ${state.rounds.length}</p>
-        <h2>Bid reminder</h2>
+      <div class="play-bids" style="--bid-columns:${Math.min(order.length, 2)}">
         <div class="bid-reminder-list">
-          ${biddingOrder(round)
+          ${order
             .map(
               (player) => `
                 <div class="bid-reminder">
@@ -445,21 +374,15 @@ function renderPlay() {
         <button class="button gold full-width" data-action="end-hand">End hand</button>
       </div>
     </section>
-  `);
+  `, { showMenu: false });
 }
 
 function renderResults() {
   const round = currentRound();
   const allEntered = state.players.every((player) => round.results[player.id] !== null);
   return layout(`
-    <div class="screen-heading">
-      <div>
-        <p class="eyebrow">Hand ${round.handNumber} results</p>
-        <h1>Who made it?</h1>
-        <p class="lede">Made bids score 10 points plus the bid. Set players score nothing.</p>
-      </div>
-    </div>
     ${renderRoundBanner(round)}
+    <h1 class="screen-title">Who made it?</h1>
     <section class="result-grid">
       ${biddingOrder(round)
         .map((player) => {
@@ -469,10 +392,10 @@ function renderResults() {
             <article class="card result-card">
               <div>
                 <span class="player-name">${escapeHtml(player.name)}</span>
-                <span class="bid-note">Bid ${round.bids[player.id]} · ${
+                <span class="bid-note">Bid ${round.bids[player.id]} ${
                   result === null
-                    ? "Choose a result"
-                    : `<span class="points-preview">+${points} points</span>`
+                    ? '<span class="choose-result">· Choose a result</span>'
+                    : `· <span class="points-preview">+${points} points</span>`
                 }</span>
               </div>
               <div class="result-toggle" aria-label="${escapeHtml(player.name)} result">
@@ -615,11 +538,7 @@ function renderScorecard() {
   const rounds = completedRounds();
   return layout(`
     <div class="screen-heading">
-      <div>
-        <p class="eyebrow">Game history</p>
-        <h1>Full scorecard</h1>
-        <p class="lede">Each player cell shows bid, result, points earned, and running total.</p>
-      </div>
+      <h1 class="screen-title">Scorecard</h1>
       <button class="button secondary" data-action="close-scorecard">← Back</button>
     </div>
     <section class="card scorecard-wrap">
@@ -670,18 +589,6 @@ function renderScorecard() {
   `);
 }
 
-function movePlayer(playerId, direction) {
-  const index = state.players.findIndex((player) => player.id === playerId);
-  const targetIndex = index + direction;
-  if (index < 0 || targetIndex < 0 || targetIndex >= state.players.length) return;
-  [state.players[index], state.players[targetIndex]] = [
-    state.players[targetIndex],
-    state.players[index],
-  ];
-  saveState();
-  render();
-}
-
 function showToast(message) {
   const existing = document.querySelector(".toast");
   if (existing) existing.remove();
@@ -690,6 +597,17 @@ function showToast(message) {
   toast.textContent = message;
   document.body.append(toast);
   window.setTimeout(() => toast.remove(), 2200);
+}
+
+function addPlayer() {
+  if (state.players.length >= 52) return;
+  state.players.push({ id: makeId(), name: "" });
+  saveState();
+  render();
+  window.setTimeout(() => {
+    const inputs = document.querySelectorAll("[data-player-name]");
+    inputs[inputs.length - 1]?.focus();
+  });
 }
 
 app.addEventListener("input", (event) => {
@@ -704,12 +622,67 @@ app.addEventListener("input", (event) => {
   if (startButton) startButton.disabled = !setupIsValid();
 });
 
-app.addEventListener("change", (event) => {
-  if (event.target.dataset.action === "set-starting-dealer") {
-    state.startingDealerId = event.target.value;
-    saveState();
+app.addEventListener("keydown", (event) => {
+  if (event.key !== "Enter" || !event.target.matches("[data-player-name]")) return;
+  event.preventDefault();
+  const inputs = [...document.querySelectorAll("[data-player-name]")];
+  const currentIndex = inputs.indexOf(event.target);
+  const nextInput = inputs[currentIndex + 1];
+
+  if (nextInput && !nextInput.value.trim()) {
+    nextInput.focus();
+    return;
+  }
+
+  addPlayer();
+});
+
+let dragState = null;
+
+app.addEventListener("pointerdown", (event) => {
+  const handle = event.target.closest("[data-drag-handle]");
+  if (!handle) return;
+  event.preventDefault();
+  const row = handle.closest(".player-row");
+  if (!row) return;
+  const list = row.parentElement;
+  dragState = { row, list, pointerId: event.pointerId };
+  row.classList.add("dragging");
+  handle.setPointerCapture(event.pointerId);
+});
+
+app.addEventListener("pointermove", (event) => {
+  if (!dragState || event.pointerId !== dragState.pointerId) return;
+  const { row, list } = dragState;
+  const siblings = [...list.querySelectorAll(".player-row:not(.dragging)")];
+  const y = event.clientY;
+  const next = siblings.find((sibling) => {
+    const rect = sibling.getBoundingClientRect();
+    return y < rect.top + rect.height / 2;
+  });
+  if (next) {
+    list.insertBefore(row, next);
+  } else {
+    list.append(row);
   }
 });
+
+function finishDrag() {
+  if (!dragState) return;
+  const { row, list } = dragState;
+  row.classList.remove("dragging");
+  const orderedIds = [...list.querySelectorAll(".player-row")].map(
+    (element) => element.dataset.playerId,
+  );
+  state.players.sort((a, b) => orderedIds.indexOf(a.id) - orderedIds.indexOf(b.id));
+  state.startingDealerId = state.players[0]?.id ?? null;
+  dragState = null;
+  saveState();
+  render();
+}
+
+app.addEventListener("pointerup", finishDrag);
+app.addEventListener("pointercancel", finishDrag);
 
 app.addEventListener("click", (event) => {
   const button = event.target.closest("[data-action]");
@@ -717,17 +690,9 @@ app.addEventListener("click", (event) => {
   const action = button.dataset.action;
 
   switch (action) {
-    case "add-player": {
-      if (state.players.length >= 52) return;
-      state.players.push({ id: makeId(), name: "" });
-      saveState();
-      render();
-      window.setTimeout(() => {
-        const inputs = document.querySelectorAll("[data-player-name]");
-        inputs[inputs.length - 1]?.focus();
-      });
+    case "add-player":
+      addPlayer();
       break;
-    }
     case "remove-player": {
       if (state.players.length <= 2) return;
       state.players = state.players.filter(
@@ -740,12 +705,6 @@ app.addEventListener("click", (event) => {
       render();
       break;
     }
-    case "move-player-up":
-      movePlayer(button.dataset.playerId, -1);
-      break;
-    case "move-player-down":
-      movePlayer(button.dataset.playerId, 1);
-      break;
     case "start-game":
       if (setupIsValid()) createGame();
       break;
