@@ -296,6 +296,10 @@ function renderBidding() {
   const order = biddingOrder(round);
   const restriction = dealerRestriction(round);
   const dealerBid = Number(round.bids[round.dealerId]);
+  const totalBids = state.players.reduce(
+    (total, player) => total + Number(round.bids[player.id]),
+    0,
+  );
   const invalidDealerBid =
     restriction.prohibited !== null && dealerBid === restriction.prohibited;
 
@@ -329,12 +333,16 @@ function renderBidding() {
     </section>
     ${
       restriction.overbid
-        ? `<p class="restriction overbid">Overbid. ${escapeHtml(
-            dealerFor(round).name,
-          )} may bid any amount.</p>`
-        : `<p class="restriction">${escapeHtml(dealerFor(round).name)} cannot bid <strong>${
-            restriction.prohibited
-          }</strong>.</p>`
+        ? `<p class="restriction overbid">
+            <strong class="bid-total">${totalBids} of ${round.cards} bid</strong>
+            <span>Overbid. ${escapeHtml(dealerFor(round).name)} may bid any amount.</span>
+          </p>`
+        : `<p class="restriction">
+            <strong class="bid-total">${totalBids} of ${round.cards} bid</strong>
+            <span>${escapeHtml(dealerFor(round).name)} cannot bid <strong>${
+              restriction.prohibited
+            }</strong>.</span>
+          </p>`
     }
     <div class="action-row">
       <button class="button" data-action="confirm-bids" ${

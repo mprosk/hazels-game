@@ -490,11 +490,20 @@ h3 {
 .restriction {
   margin: 16px 0 0;
   padding: 13px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
   border-radius: 13px;
   background: #fff2cf;
   color: #745213;
   font-size: 13px;
   font-weight: 700;
+}
+
+.bid-total {
+  white-space: nowrap;
 }
 
 .restriction.overbid {
