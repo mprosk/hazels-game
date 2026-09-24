@@ -1,0 +1,11 @@
+{
+  "name": "Hazel's Game",
+  "short_name": "Hazel's Game",
+  "description": "A table-ready scorekeeper for Hazel's Game.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f0e6",
+  "theme_color": "#12382d",
+  "icons": []
+}
